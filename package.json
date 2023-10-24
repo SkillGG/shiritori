@@ -1,0 +1,28 @@
+{
+  "name": "bossdungeon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "backend": "cd ./backend & npm start",
+    "frontend": "cd ./frontend & npx vite",
+    "start": "conc \"npm:backend\" \"npm:frontend\"",
+    "install-frontend": "cd ./frontend & npm i",
+    "install-backend": "cd ./backend & npm i",
+    "install-shared": "cd ./shared & npm i",
+    "setup": "npm i & conc \"npm:install-frontend\" \"npm:install-backend\" \"npm:install-shared\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skillgg/bossdungeon.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skillgg/bossdungeon/issues"
+  },
+  "homepage": "https://github.com/skillgg/bossdungeon#readme",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
