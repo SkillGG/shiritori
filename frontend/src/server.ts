@@ -1,10 +1,11 @@
 import Zod from "zod";
 
+const { HOST: serverHost, PORT: serverPort, HTTPS: serverHttps } = _SERVER_INFO;
+
 export class Server {
     static serverPath = `http${
-        import.meta.env.HTTPS === "https" ? "s" : ""
-    }://${import.meta.env.SERVER_HOST}:${import.meta.env.SERVER_PORT}`;
-    // static serverPath = "https://shiritori.skillgg.replit.co:9000"
+        serverHttps === "https" ? "s" : ""
+    }://${serverHost}:${serverPort}`;
     static async sendToServer<T extends Zod.ZodType>(
         path: string,
         init: RequestInit = {},
