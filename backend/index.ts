@@ -4,6 +4,7 @@ import { SSEResponse } from "./utils";
 import { Request } from "express";
 import { connectionShape, playerIDShape } from "../shared/events";
 import { GameHub } from "./Hub";
+import { loginShape } from "./routeShapes";
 
 const gameHub = new GameHub();
 
@@ -79,38 +80,65 @@ addSSERoute(
     }
 );
 
-addRoute("/room/:roomid/:playerid/ready", { method: "get" }, (req, res) => {
-    const safeParams = connectionShape.safeParse(req.params);
-    if (!safeParams.success) {
-        res.status(404).send("Room link is not valid!");
-        return;
+addRoute(
+    "/room/:roomid/:playerid/ready",
+    { method: "get" },
+    (_req, _res, bP, ret) => {
+        const { playerid, roomid } = bP(connectionShape);
+
+        const gameRoom = getRoom(roomid);
+
+        gameRoom.markReady(playerid);
+
+        ret(200, { msg: "OK" });
     }
-    const { playerid, roomid } = safeParams.data;
+);
 
-    const gameRoom = getRoom(roomid);
+addRoute(
+    "/room/:roomid/:playerid/unready",
+    { method: "get" },
+    (_req, _res, bP, ret) => {
+        const { playerid, roomid } = bP(connectionShape);
 
-    gameRoom.markReady(playerid);
+        const gameRoom = getRoom(roomid);
 
-    res.status(200).send(JSON.stringify({ status: "OK" }));
+        gameRoom.markUnready(playerid);
+
+        ret(200, { msg: "OK" });
+    }
+);
+
+addRoute("/room/list", { method: "get" }, (_req, _res, _bP, ret) => {
+    ret(200, { data: gameHub.getRoomList() });
 });
 
-addRoute("/room/:roomid/:playerid/unready", { method: "get" }, (req, res) => {
-    const safeParams = connectionShape.safeParse(req.params);
-    if (!safeParams.success) {
-        res.status(404).send("Room link is not valid!");
+addRoute("/user/login", { method: "post" }, (req, res, bodyParse, ret) => {
+    if (!req.body) {
+        ret(404, { err: "No username provided!" });
         return;
     }
-    const { playerid, roomid } = safeParams.data;
 
-    const gameRoom = getRoom(roomid);
+    const {
+        data: { playerid },
+    } = bodyParse(loginShape);
 
-    gameRoom.markUnready(playerid);
+    console.log("logging in as ", playerid);
 
-    res.status(200).send(JSON.stringify({ status: "OK" }));
+    res.cookie("userlogon", playerid, {
+        expires: new Date(Date.now() + 1000 * 60 * 60),
+        secure: true,
+        sameSite: "none",
+    });
+    ret(200, { msg: "OK" });
 });
 
-addRoute("/room/list", { method: "get" }, (req, res) => {
-    res.status(200).send(JSON.stringify(gameHub.getRoomList()));
+addRoute("/user/logout", { method: "post" }, (_req, res, _bP, ret) => {
+    res.cookie("userlogon", "", {
+        expires: new Date(Date.now() - 10),
+        secure: true,
+        sameSite: "none",
+    });
+    ret(200, { msg: "OK" });
 });
 
 startServer(8080);

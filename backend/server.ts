@@ -2,11 +2,25 @@ import { ConnectionGeneric, SSEResponse, UserSSEConnection } from "./utils";
 
 import express, { Request, Response } from "express";
 
+import cookieParser from "cookie-parser";
+import { RouteResponse } from "./routeShapes";
+
+const website = "http://localhost:5173";
+
 const app = express();
+
+app.use(express.text({ type: "*/*" }));
+
+app.use(cookieParser());
 
 const addCORSHeaders = (res: Response) => {
     res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Origin", `${website}`);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+};
+
+const getCookies = (req: Request) => {
+    console.log("kuki", req.cookies);
 };
 
 export const addSSERoute = <Connection extends UserSSEConnection<any>>(
@@ -44,17 +58,40 @@ export const addSSERoute = <Connection extends UserSSEConnection<any>>(
     });
 };
 
-export const addRoute = (
+export const addRoute = <T = {}>(
     route: string,
     options: {
         method: "get" | "post";
     },
-    func: (req: Request, res: Response) => void
+    func: (
+        req: Request,
+        res: Response,
+        parseBody: <Y extends Zod.ZodType>(shape: Y) => Zod.infer<Y>,
+        respond: (status: number, response: RouteResponse<T>) => void
+    ) => void
 ) => {
     console.log("Adding route", route);
     app[options.method](route, (req, res: Response) => {
+        console.log(`got someone on ${route}`);
         addCORSHeaders(res);
-        func(req, res);
+        getCookies(req);
+        const ret = (status: number, val: RouteResponse<T>) => {
+            res.status(status);
+            res.send(JSON.stringify(val));
+        };
+        func(
+            req,
+            res,
+            (shape) => {
+                const safeParams = shape.safeParse(JSON.parse(req.body));
+                if (!safeParams.success) {
+                    ret(404, { err: safeParams.error.message });
+                    throw "Arguments not valid!";
+                }
+                return safeParams.data;
+            },
+            ret
+        );
     });
 };
 

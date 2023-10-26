@@ -1,26 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { GameNav } from "./GameNav";
 import { Dictionaries } from "./strings";
+import { Server } from "./server";
+
+import Cookies from "js-cookie";
+import { ThemeContext } from "./themes/themeContext";
+import { darkTheme } from "./themes/darkTheme";
+import { Theme } from "./themes/theme";
+import { Game } from "./Game";
+import { loginShape, logoutShape } from "./../../backend/routeShapes";
 
 function App() {
     const [userName, setUserName] = useState<string | null>(
-        localStorage.getItem("login") || null
+        Cookies.get("userlogon") || null
     );
+
+    const [theme, setTheme] = useState<Theme>(darkTheme);
 
     const [langCode, setLangCode] = useState<keyof typeof Dictionaries>("EN");
 
+    useEffect(() => {
+        document.body.style.backgroundColor = theme.backgroundColor;
+        document.body.style.color = theme.textColor;
+    }, [theme]);
+
     return (
-        <>
+        <ThemeContext.Provider value={theme}>
             <GameNav
+                setTheme={(th) => setTheme(() => th)}
                 username={userName}
                 login={(as: string) => {
-                    setUserName(as);
-                    localStorage.setItem("login", as);
+                    Server.sendPOST(
+                        "user/login",
+                        {
+                            data: { playerid: as },
+                        },
+                        loginShape
+                    ).then(() => {
+                        setUserName(as);
+                    });
                 }}
                 logout={() => {
-                    setUserName(null);
-                    localStorage.removeItem("login");
+                    Server.sendPOST(
+                        "user/logout",
+                        {
+                            data: {},
+                        },
+                        logoutShape
+                    ).then(() => {
+                        setUserName(null);
+                    });
                 }}
                 lang={Dictionaries[langCode]}
                 changeLangCode={(c: keyof typeof Dictionaries) => {
@@ -39,7 +69,8 @@ function App() {
                     setLangCode(() => newLangCode);
                 }}
             />
-        </>
+            {userName && <Game _={null} />}
+        </ThemeContext.Provider>
     );
 }
 

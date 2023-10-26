@@ -1,0 +1,14 @@
+.navOptions {
+    display: flex;
+    width: fit-content;
+    float: right;
+    clear: both;
+    flex-direction: column;
+}
+
+.navSettingButton {
+    all: unset;
+    display: block;
+    text-align: center;
+    cursor: pointer;
+}

@@ -1,15 +1,15 @@
-## Boss Dungeon Game
+## Shiritori v2
 
 To start the project clone the repo using
 
 ```bash
-git clone https://github.com/Sosossojowy/bossDungeon.git
+git clone https://github.com/skillgg/shiritori.git
 ```
 
 then enter the folder
 
 ```bash
-cd bossdungeon
+cd shiritori
 ```
 
 and install the dependencies
