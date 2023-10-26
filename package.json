@@ -4,7 +4,7 @@
   "description": "",
   "main": "",
   "scripts": {
-    "backend": "cd ./backend & npm start",
+    "backend": "cd ./backend & npm run go",
     "frontend": "cd ./frontend & npx vite",
     "start": "conc \"npm:backend\" \"npm:frontend\"",
     "install-frontend": "cd ./frontend & npm i",
@@ -24,5 +24,11 @@
   "homepage": "https://github.com/skillgg/bossdungeon#readme",
   "dependencies": {
     "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": "16.20.0"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.10"
   }
 }
