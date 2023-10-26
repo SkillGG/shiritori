@@ -1,8 +1,8 @@
-type DeepPartial<T> = T extends object
-    ? {
-          [P in keyof T]?: DeepPartial<T[P]>;
-      }
-    : T;
+// type DeepPartial<T> = T extends object
+//     ? {
+//           [P in keyof T]?: DeepPartial<T[P]>;
+//       }
+//     : T;
 
 export interface Dictionary {
     nav: {
@@ -19,7 +19,7 @@ export const EnglishLanguage: Dictionary = {
         welcomeText: (name: string) => `Welcome ${name}!`,
         loginButton: "Login",
         logoutButton: "Logout",
-        loginPlaceholder: "Login"
+        loginPlaceholder: "Login",
     },
     langCode: "EN",
 };

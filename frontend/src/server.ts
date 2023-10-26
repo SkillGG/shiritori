@@ -1,11 +1,16 @@
 import Zod from "zod";
 
-const { HOST: serverHost, PORT: serverPort, HTTPS: serverHttps } = _SERVER_INFO;
+const {
+    HOST: serverHost,
+    PORT: serverPort,
+    HTTPS: serverHttps,
+    EXTHOST: extHost,
+} = _SERVER_INFO;
 
 export class Server {
-    static serverPath = `http${
-        serverHttps === "https" ? "s" : ""
-    }://${serverHost}:${serverPort}`;
+    static serverPath = `http${serverHttps === "https" ? "s" : ""}://${
+        extHost ? extHost : serverHost
+    }:${serverPort}`;
     static async sendToServer<T extends Zod.ZodType>(
         path: string,
         init: RequestInit = {},
