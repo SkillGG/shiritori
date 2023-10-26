@@ -5,6 +5,9 @@ import { Request } from "express";
 import { connectionShape, playerIDShape } from "../shared/events";
 import { GameHub } from "./Hub";
 import { loginShape } from "./routeShapes";
+import { configDotenv } from "dotenv";
+
+configDotenv({ path: "./../.env" });
 
 const gameHub = new GameHub();
 
@@ -141,4 +144,6 @@ addRoute("/user/logout", { method: "post" }, (_req, res, _bP, ret) => {
     ret(200, { msg: "OK" });
 });
 
-startServer(9000);
+const { SERVER_HOST, SERVER_PORT } = process.env;
+
+startServer(parseInt(SERVER_PORT || "9000", 10), SERVER_HOST);
