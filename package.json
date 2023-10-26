@@ -4,13 +4,13 @@
   "description": "",
   "main": "",
   "scripts": {
-    "backend": "cd ./backend & npm run go",
-    "frontend": "cd ./frontend & npx vite",
+    "backend": "cd ./backend ; npm run go",
+    "frontend": "cd ./frontend ; npx vite",
     "start": "conc \"npm:backend\" \"npm:frontend\"",
-    "install-frontend": "cd ./frontend & npm i",
-    "install-backend": "cd ./backend & npm i",
-    "install-shared": "cd ./shared & npm i",
-    "setup": "npm i & conc \"npm:install-frontend\" \"npm:install-backend\" \"npm:install-shared\""
+    "install-frontend": "cd ./frontend ; npm i",
+    "install-backend": "cd ./backend ; npm i",
+    "install-shared": "cd ./shared ; npm i",
+    "setup": "npm i ; conc \"npm:install-frontend\" \"npm:install-backend\" \"npm:install-shared\""
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "concurrently": "^8.2.0"
   },
   "engines": {
-    "node": "16.20.0"
+    "node": "16.x"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.10"

@@ -95,12 +95,17 @@ export const addRoute = <T = {}>(
     });
 };
 
-export const startServer = (port: number, then?: () => void) => {
+export const startServer = (
+    port: number,
+    host: string = "localhost",
+    then?: () => void
+) => {
     app.listen(
         port,
+        host,
         then ||
             (() => {
-                console.log("listening on http://localhost:8080");
+                console.log(`Listening on http://${host}:${port}`);
             })
     );
 };
