@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "backend": "cd ./backend ; npm run go",
-    "frontend": "cd ./frontend ; npx vite",
+    "frontend": "cd ./frontend ; npx vite --host 0.0.0.0",
     "start": "conc \"npm:backend\" \"npm:frontend\"",
     "install-frontend": "cd ./frontend ; npm i",
     "install-backend": "cd ./backend ; npm i",
