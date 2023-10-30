@@ -9,7 +9,7 @@ import { ThemeContext } from "./themes/themeContext";
 import { darkTheme } from "./themes/darkTheme";
 import { Theme } from "./themes/theme";
 import { Game } from "./Game";
-import { loginShape, logoutShape } from "./../../backend/routeShapes";
+import { responseOK } from "../../backend/routeShapes";
 
 function App() {
     const [userName, setUserName] = useState<string | null>(
@@ -31,26 +31,18 @@ function App() {
                 setTheme={(th) => setTheme(() => th)}
                 username={userName}
                 login={(as: string) => {
-                    Server.sendPOST(
-                        "user/login",
-                        {
-                            data: { playerid: as },
-                        },
-                        loginShape
-                    ).then(() => {
+                    Server.sendPOST("user/login", "user/login", {
+                        playerid: as,
+                    }).then(() => {
                         setUserName(as);
                     });
                 }}
                 logout={() => {
-                    Server.sendPOST(
-                        "user/logout",
-                        {
-                            data: {},
-                        },
-                        logoutShape
-                    ).then(() => {
-                        setUserName(null);
-                    });
+                    Server.sendPOST("user/logout", "user/logout", {}).then(
+                        () => {
+                            setUserName(null);
+                        }
+                    );
                 }}
                 lang={Dictionaries[langCode]}
                 changeLangCode={(c: keyof typeof Dictionaries) => {

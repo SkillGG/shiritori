@@ -11,8 +11,8 @@ configDotenv({ path: "./../.env" });
 
 const gameHub = new GameHub();
 
-const getRoom = (roomid: string): GameRoom => {
-    const gameRoom = gameHub.getRoom(roomid);
+const getRoom = (roomid: number): GameRoom => {
+    const gameRoom = gameHub.getRoomByID(roomid);
     if (!gameRoom) throw "Game Room not found";
     return gameRoom;
 };
@@ -38,7 +38,9 @@ addSSERoute(
         }
         const { playerid, roomid } = safeParams.data;
 
-        const gameRoom = getRoom(roomid);
+        const rID = parseInt(roomid);
+
+        const gameRoom = getRoom(rID);
 
         if (gameRoom.openedPlayers.has(playerid)) {
             res.raw.status(400).send("Player already exists!");
@@ -84,64 +86,63 @@ addSSERoute(
 );
 
 addRoute(
-    "/room/:roomid/:playerid/ready",
+    "room/:roomid/:playerid/ready",
     { method: "get" },
-    (_req, _res, bP, ret) => {
-        const { playerid, roomid } = bP(connectionShape);
+    ({ respond, params }) => {
+        const { playerid, roomid } = params;
 
-        const gameRoom = getRoom(roomid);
+        if (!playerid || !roomid) return;
+
+        const rID = parseInt(roomid);
+
+        const gameRoom = getRoom(rID);
 
         gameRoom.markReady(playerid);
 
-        ret(200, { msg: "OK" });
+        respond(200, { msg: "OK" });
     }
 );
 
 addRoute(
-    "/room/:roomid/:playerid/unready",
+    "room/:roomid/:playerid/unready",
     { method: "get" },
-    (_req, _res, bP, ret) => {
-        const { playerid, roomid } = bP(connectionShape);
+    ({ respond, params }) => {
+        const { playerid, roomid } = params;
 
-        const gameRoom = getRoom(roomid);
+        const rID = parseInt(roomid);
+
+        const gameRoom = getRoom(rID);
 
         gameRoom.markUnready(playerid);
 
-        ret(200, { msg: "OK" });
+        respond(200, { msg: "OK" });
     }
 );
 
-addRoute("/room/list", { method: "get" }, (_req, _res, _bP, ret) => {
-    ret(200, { data: gameHub.getRoomList() });
+addRoute("room/list", { method: "get" }, ({ respond }) => {
+    respond(200, gameHub.getRoomList());
 });
 
-addRoute("/user/login", { method: "post" }, (req, res, bodyParse, ret) => {
-    if (!req.body) {
-        ret(404, { err: "No username provided!" });
-        return;
-    }
+addRoute("user/login", { method: "post" }, ({ res, respond, body }) => {
+    const { playerid } = body;
 
-    const {
-        data: { playerid },
-    } = bodyParse(loginShape);
-
-    console.log("logging in as ", playerid);
+    if (!playerid) respond(404, { error: "Invalid playerid!" });
 
     res.cookie("userlogon", playerid, {
         expires: new Date(Date.now() + 1000 * 60 * 60),
         secure: true,
         sameSite: "none",
     });
-    ret(200, { msg: "OK" });
+    respond(200, { msg: "OK" });
 });
 
-addRoute("/user/logout", { method: "post" }, (_req, res, _bP, ret) => {
+addRoute("user/logout", { method: "post" }, ({ res, respond }) => {
     res.cookie("userlogon", "", {
         expires: new Date(Date.now() - 10),
         secure: true,
         sameSite: "none",
     });
-    ret(200, { msg: "OK" });
+    respond(200, { msg: "OK" });
 });
 
 const { SERVER_HOST, SERVER_PORT } = process.env;

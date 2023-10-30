@@ -10,8 +10,26 @@ export class UserConnection extends UserSSEConnection<UserSSEEvents> {
     static id: number = 0;
 }
 
+export enum GameRoomState {
+    STANDBY,
+    LOBBY,
+    GAME,
+}
+
+interface Gamemode {
+    name: string;
+}
+
+export interface NewRoomData {
+    gamemode: Gamemode;
+    name: string;
+}
+
 export class GameRoom {
-    roomid: string;
+    roomid: number;
+    roomname: string;
+
+    gamemode: Gamemode;
 
     players: Map<string, UserConnection> = new Map();
     readyPlayers: Set<string> = new Set();
@@ -26,12 +44,14 @@ export class GameRoom {
         return [...this.players].map((q) => q[1]).filter((c) => !c.isClosed);
     }
 
-    gameInProgress = false;
+    gameState: GameRoomState = GameRoomState.STANDBY;
 
     countdown?: Countdown;
 
-    constructor(roomid: string) {
+    constructor(roomid: number, { gamemode, name }: NewRoomData) {
         this.roomid = roomid;
+        this.gamemode = gamemode;
+        this.roomname = name;
     }
 
     startGame() {

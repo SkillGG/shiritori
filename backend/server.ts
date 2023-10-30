@@ -3,7 +3,7 @@ import { ConnectionGeneric, SSEResponse, UserSSEConnection } from "./utils";
 import express, { Request, Response } from "express";
 
 import cookieParser from "cookie-parser";
-import { RouteResponse } from "./routeShapes";
+import { serverRoutes } from "./routeShapes";
 
 const website = "http://localhost:5173";
 
@@ -58,40 +58,62 @@ export const addSSERoute = <Connection extends UserSSEConnection<any>>(
     });
 };
 
-export const addRoute = <T = {}>(
-    route: string,
+export const addRoute = <RouteID extends keyof serverRoutes>(
+    route: RouteID,
     options: {
         method: "get" | "post";
     },
-    func: (
-        req: Request,
-        res: Response,
-        parseBody: <Y extends Zod.ZodType>(shape: Y) => Zod.infer<Y>,
-        respond: (status: number, response: RouteResponse<T>) => void
-    ) => void
+    func: (o: {
+        req: Request;
+        res: Response;
+        respond: (
+            status: number,
+            response: Zod.infer<serverRoutes[RouteID]["res"]>
+        ) => void;
+        params: Zod.infer<serverRoutes[RouteID]["vars"]>;
+        body: Zod.infer<serverRoutes[RouteID]["req"]>;
+    }) => void
 ) => {
     console.log("Adding route", route);
-    app[options.method](route, (req, res: Response) => {
-        console.log(`got someone on ${route}`);
+    app[options.method]("/" + route, (req, res: Response) => {
+        console.log(`${options.method} @ ${route}`);
         addCORSHeaders(res);
         getCookies(req);
-        const ret = (status: number, val: RouteResponse<T>) => {
+        const ret = (
+            status: number,
+            val: Zod.infer<serverRoutes[RouteID]["res"]>
+        ) => {
             res.status(status);
             res.send(JSON.stringify(val));
         };
-        func(
-            req,
-            res,
-            (shape) => {
-                const safeParams = shape.safeParse(JSON.parse(req.body));
-                if (!safeParams.success) {
-                    ret(404, { err: safeParams.error.message });
-                    throw "Arguments not valid!";
-                }
-                return safeParams.data;
-            },
-            ret
-        );
+        try {
+            const bodyRaw =
+                typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+            const safeBody = serverRoutes[route].req.safeParse(bodyRaw);
+            const safeParams = serverRoutes[route].vars.safeParse(req.params);
+            if (safeBody.success && safeParams.success) {
+                func({
+                    req,
+                    res,
+                    respond: ret,
+                    params: safeParams.data,
+                    body: safeBody.data,
+                });
+            } else {
+                console.warn(
+                    "Could not process the request due to wrong request body or wrong params!"
+                );
+                console.log(
+                    safeParams.success
+                        ? safeBody.success
+                            ? "Nothing went wrong!"
+                            : safeBody.error
+                        : safeParams.error
+                );
+            }
+        } catch (e) {
+            console.error("Could not parse body as a JSON!", req.body, e);
+        }
     });
 };
 

@@ -10,7 +10,7 @@ export const RoomList: FC<RoomListProps> = () => {
     const gameData = useContext(GameContext);
 
     const getRooms = async () => {
-        const res = await Server.sendToServer("room/list");
+        const res = await Server.sendToServer("room/list", "room/list");
 
         console.log(res);
     };
