@@ -3,7 +3,7 @@ import { ConnectionGeneric, SSEResponse, UserSSEConnection } from "./utils";
 import express, { Request, Response } from "express";
 
 import cookieParser from "cookie-parser";
-import { serverRoutes } from "./routeShapes";
+import { ServerRoute, serverRoutes } from "../shared/routeShapes";
 
 const website = "http://localhost:5173";
 
@@ -68,10 +68,10 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
         res: Response;
         respond: (
             status: number,
-            response: Zod.infer<serverRoutes[RouteID]["res"]>
+            response: ServerRoute<RouteID, "res">
         ) => void;
-        params: Zod.infer<serverRoutes[RouteID]["vars"]>;
-        body: Zod.infer<serverRoutes[RouteID]["req"]>;
+        params: ServerRoute<RouteID, "vars">;
+        body: ServerRoute<RouteID, "req">;
     }) => void
 ) => {
     console.log("Adding route", route);
@@ -79,10 +79,7 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
         console.log(`${options.method} @ ${route}`);
         addCORSHeaders(res);
         getCookies(req);
-        const ret = (
-            status: number,
-            val: Zod.infer<serverRoutes[RouteID]["res"]>
-        ) => {
+        const ret = (status: number, val: ServerRoute<RouteID, "res">) => {
             res.status(status);
             res.send(JSON.stringify(val));
         };

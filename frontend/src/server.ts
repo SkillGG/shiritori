@@ -1,10 +1,10 @@
 import Zod from "zod";
-import { playerIDShape } from "../../shared/events";
 import {
-    loginShape,
-    logoutShape,
     serverRoutes,
-} from "../../backend/routeShapes";
+    okErrorRes,
+    responseError,
+    responseOK,
+} from "../../shared/routeShapes";
 
 const {
     HOST: serverHost,
@@ -17,6 +17,26 @@ export class Server {
     static serverPath = `http${serverHttps === "https" ? "s" : ""}://${
         extHost ? extHost : serverHost
     }:${serverPort}/`;
+
+    static checking = false;
+
+    static async checkState(onServerOn: () => void) {
+        this.checking = true;
+        const res = await fetch(`${Server.serverPath}check`, {}).catch(
+            () => null
+        );
+        this.checking = false;
+        if (res && res.ok && res.status === 200) {
+            onServerOn();
+        } else {
+            console.log("starting new timeout");
+            setTimeout(() => {
+                console.log("checking status");
+                this.checkState(onServerOn);
+            }, 200);
+        }
+    }
+
     static async sendToServer<
         X extends keyof typeof serverRoutes,
         Rs extends serverRoutes[X]["res"]
@@ -76,5 +96,18 @@ export class Server {
         } else {
             throw "Erroneous response! " + r.body;
         }
+    }
+
+    static isDataPacket<
+        X extends keyof serverRoutes,
+        T extends serverRoutes[X]["data"]
+    >(
+        p: (okErrorRes | responseOK | responseError) | Zod.infer<T>,
+        routeId: X
+    ): p is Zod.infer<T> {
+        if (typeof p === "object" && serverRoutes[routeId].req.shape) {
+            return true;
+        }
+        return false;
     }
 }

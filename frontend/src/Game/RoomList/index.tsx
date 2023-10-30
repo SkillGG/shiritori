@@ -1,18 +1,44 @@
 import { FC, useContext, useEffect } from "react";
-import { GameContext, GameData } from "..";
+import { GameCtx, GameContext } from "..";
 import { Server } from "../../server";
+import { Language } from "../../strings";
 
 interface RoomListProps {
-    changeData: React.Dispatch<React.SetStateAction<GameData>>;
+    changeData: React.Dispatch<React.SetStateAction<GameContext>>;
+    enterRoom(roomid: number): void;
 }
 
-export const RoomList: FC<RoomListProps> = () => {
-    const gameData = useContext(GameContext);
+export const RoomList: FC<RoomListProps> = ({ changeData }) => {
+    const lang = useContext(Language);
+
+    const gameData = useContext(GameCtx);
 
     const getRooms = async () => {
         const res = await Server.sendToServer("room/list", "room/list");
 
-        console.log(res);
+        if (res) {
+            if (Server.isDataPacket(res, "room/list")) {
+                changeData((data) => {
+                    return {
+                        ...data,
+                        listData: {
+                            rooms: res.map((r) => {
+                                return {
+                                    maxplayers: r.maxplayers,
+                                    roomid: r.roomid,
+                                    roomname: r.roomname,
+                                    playerNum: r.playersIn,
+                                };
+                            }),
+                        },
+                    };
+                });
+            } else {
+                if ("error" in res) {
+                    console.error("Error while getting room list!", res.error);
+                }
+            }
+        }
     };
 
     useEffect(() => {
@@ -21,9 +47,11 @@ export const RoomList: FC<RoomListProps> = () => {
         }
     }, [gameData.listData]);
 
-    return (
+    return gameData.listData ? (
         <>
             <table></table>
         </>
+    ) : (
+        <>{lang.roomlist.loading()}</>
     );
 };

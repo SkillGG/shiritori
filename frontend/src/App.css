@@ -1,3 +1,28 @@
 * {
     box-sizing: border-box;
 }
+
+@keyframes waitRotate {
+    from {
+        rotate: 0deg;
+    }
+    to {
+        rotate: 360deg;
+    }
+}
+
+svg#waitingforserver circle {
+    animation: waitRotate infinite 1s forwards;
+    transition-timing-function: cubic-bezier(0.680, -0.550, 0.265, 1.550);
+    transform-origin: 50% 50%;
+    fill: transparent;
+    stroke: white;
+    stroke-dasharray: 7;
+    stroke-linecap: round;
+    stroke-width: 3;
+}
+
+#waitingforserver {
+    display: block;
+    margin-inline: auto;
+}

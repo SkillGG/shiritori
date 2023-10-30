@@ -4,7 +4,7 @@ import { SSEResponse } from "./utils";
 import { Request } from "express";
 import { connectionShape, playerIDShape } from "../shared/events";
 import { GameHub } from "./Hub";
-import { loginShape } from "./routeShapes";
+import { loginShape } from "../shared/routeShapes";
 import { configDotenv } from "dotenv";
 
 configDotenv({ path: "./../.env" });
@@ -102,6 +102,10 @@ addRoute(
         respond(200, { msg: "OK" });
     }
 );
+
+addRoute("check", { method: "get" }, ({ respond }) => {
+    respond(200, { msg: "OK" });
+});
 
 addRoute(
     "room/:roomid/:playerid/unready",

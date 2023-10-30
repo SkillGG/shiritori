@@ -1,9 +1,6 @@
-import { FC, createContext, useContext, useState } from "react";
+import { FC, createContext, useState } from "react";
 import { RoomList } from "./RoomList";
-
-interface GameProps {
-    _: null;
-}
+import { RoomData, LobbyData, RoomListData, GameProps } from "./gameTypes";
 
 enum GameState {
     RoomList,
@@ -11,47 +8,39 @@ enum GameState {
     Game,
 }
 
-type RoomData = {
-    maxplayers: number;
-    players: [];
-    roomid: number;
-    words: [];
-};
-
-type RoomListData = {
-    rooms: RoomData[];
-};
-
-type LobbyData = {
-    players: [];
-};
-
-export type GameData = {
+export type GameContext = {
     roomData?: RoomData;
     lobbyData?: LobbyData;
     listData?: RoomListData;
+    roomConnection?: EventSource;
 };
 
-export const GameContext = createContext<GameData>({});
+export const GameCtx = createContext<GameContext>({});
 
 export const Game: FC<GameProps> = () => {
     const [gameState, setGameState] = useState<GameState>(GameState.RoomList);
 
-    const [gameData, setGameData] = useState<GameData>({});
+    const [gameData, setGameData] = useState<GameContext>({});
 
     return (
-        <GameContext.Provider value={gameData}>
+        <GameCtx.Provider value={gameData}>
             {gameState === GameState.Game ? (
                 <></>
             ) : gameState === GameState.Lobby ? (
                 <></>
             ) : gameState === GameState.RoomList ? (
                 <>
-                    <RoomList changeData={setGameData} />
+                    <RoomList
+                        changeData={setGameData}
+                        enterRoom={(roomid: number) => {
+                            //
+                            setGameState(GameState.Lobby);
+                        }}
+                    />
                 </>
             ) : (
                 <>Invalid game state! Refresh the page!</>
             )}
-        </GameContext.Provider>
+        </GameCtx.Provider>
     );
 };

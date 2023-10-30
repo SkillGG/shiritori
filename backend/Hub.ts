@@ -1,4 +1,4 @@
-import { UserSSEEvents } from "../shared/events";
+import { ServerRoute } from "../shared/routeShapes";
 import { GameRoom, NewRoomData } from "./GameRoom";
 
 export class GameHub {
@@ -15,8 +15,8 @@ export class GameHub {
         );
     }
 
-    getRoomList(): UserSSEEvents["roomData"][0][] {
-        return this.rooms.map((room) => room.getRoomLobbyData());
+    getRoomList(): ServerRoute<"room/list", "res"> {
+        return this.rooms.map((room) => room.getRoomInfo());
     }
 
     createNewGameRoom(data: NewRoomData) {

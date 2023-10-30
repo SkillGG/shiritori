@@ -1,6 +1,11 @@
 import { UserSSEConnection } from "./utils";
 
-import { UserSSEEvents, terminationReason } from "./../shared/events";
+import {
+    UserSSEEvents,
+    terminationReason,
+    roomDataShape,
+    roomInfoShape,
+} from "./../shared/events";
 import { Countdown } from "./countdown";
 
 export class UserConnection extends UserSSEConnection<UserSSEEvents> {
@@ -23,11 +28,13 @@ interface Gamemode {
 export interface NewRoomData {
     gamemode: Gamemode;
     name: string;
+    maxplayers?: number;
 }
 
 export class GameRoom {
     roomid: number;
     roomname: string;
+    maxplayers: number = 4;
 
     gamemode: Gamemode;
 
@@ -48,10 +55,11 @@ export class GameRoom {
 
     countdown?: Countdown;
 
-    constructor(roomid: number, { gamemode, name }: NewRoomData) {
+    constructor(roomid: number, { gamemode, name, maxplayers }: NewRoomData) {
         this.roomid = roomid;
         this.gamemode = gamemode;
         this.roomname = name;
+        this.maxplayers = maxplayers ?? this.maxplayers;
     }
 
     startGame() {
@@ -118,8 +126,22 @@ export class GameRoom {
         }
     }
 
-    getRoomLobbyData() {
-        const ret: UserSSEEvents["roomData"][0] = { playersIn: {} };
+    getRoomInfo(): roomInfoShape {
+        return {
+            playersIn: [...this.players.keys()].length,
+            maxplayers: this.maxplayers,
+            roomid: this.roomid,
+            roomname: this.roomname,
+        };
+    }
+
+    getRoomLobbyData(): roomDataShape {
+        const ret: roomDataShape = {
+            playersIn: {},
+            maxplayers: this.maxplayers,
+            roomid: this.roomid,
+            roomname: this.roomname,
+        };
         for (const [pl] of this.players) {
             ret.playersIn[pl] = { ready: this.readyPlayers.has(pl) };
         }

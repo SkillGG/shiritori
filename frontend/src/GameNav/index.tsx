@@ -1,15 +1,15 @@
 import { FC, useContext, useRef } from "react";
-import { Dictionaries, Dictionary } from "../strings";
+import { Dictionaries, Dictionary, Language } from "../strings";
 import { Theme } from "../themes/theme";
 import { ThemeContext } from "../themes/themeContext";
 import { darkTheme } from "../themes/darkTheme";
 import { lightTheme } from "../themes/lightTheme";
 
 interface GameNavProps {
-    lang: Dictionary;
     changeLangCode(c: keyof typeof Dictionaries): void;
     toggleLang(): void;
     setTheme(th: Theme): void;
+    onlyOptions: boolean;
     username: string | null;
     login(as: string): void;
     logout(): void;
@@ -21,11 +21,13 @@ export const GameNav: FC<GameNavProps> = ({
     username,
     login,
     logout,
-    lang,
     changeLangCode,
+    onlyOptions,
     toggleLang,
     setTheme,
 }) => {
+    const lang = useContext(Language);
+
     const usernameRef = useRef<HTMLInputElement>(null);
 
     const theme = useContext(ThemeContext);
@@ -65,38 +67,40 @@ export const GameNav: FC<GameNavProps> = ({
                         {theme.id === 0 ? "D" : "W"}
                     </button>
                 </div>
-                <div className={`loginForm ${username ? "loggedin" : ""}`}>
-                    {username ? (
-                        <>
-                            {lang.nav.welcomeText(username)}
-                            <button onClick={() => logout()}>
-                                {lang.nav.logoutButton}
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <input
-                                type="text"
-                                ref={usernameRef}
-                                placeholder={`${lang.nav.loginPlaceholder}`}
-                                style={{
-                                    backgroundColor:
-                                        theme.backgroundColorSecondary,
-                                    color: theme.textColor,
-                                    border: "none",
-                                }}
-                            />
-                            <button
-                                onClick={() => {
-                                    if (!usernameRef.current) return;
-                                    login(usernameRef.current.value);
-                                }}
-                            >
-                                {lang.nav.loginButton}
-                            </button>
-                        </>
-                    )}
-                </div>
+                {!onlyOptions && (
+                    <div className={`loginForm ${username ? "loggedin" : ""}`}>
+                        {username ? (
+                            <>
+                                {lang.nav.welcomeText(username)}
+                                <button onClick={() => logout()}>
+                                    {lang.nav.logoutButton}
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <input
+                                    type="text"
+                                    ref={usernameRef}
+                                    placeholder={`${lang.nav.loginPlaceholder}`}
+                                    style={{
+                                        backgroundColor:
+                                            theme.backgroundColorSecondary,
+                                        color: theme.textColor,
+                                        border: "none",
+                                    }}
+                                />
+                                <button
+                                    onClick={() => {
+                                        if (!usernameRef.current) return;
+                                        login(usernameRef.current.value);
+                                    }}
+                                >
+                                    {lang.nav.loginButton}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                )}
             </nav>
         </>
     );

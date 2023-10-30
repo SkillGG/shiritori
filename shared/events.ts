@@ -56,9 +56,23 @@ export const timerShape = object({
 
 export type timerShape = z.infer<typeof timerShape>;
 
+export const roomInfoShape = object({
+    playersIn: number(),
+    maxplayers: number(),
+    roomid: number(),
+    roomname: string(),
+});
+
+export type roomInfoShape = z.infer<typeof roomInfoShape>;
+
 export const roomDataShape = object({
     playersIn: record(string(), object({ ready: boolean() })),
+    maxplayers: number(),
+    roomid: number(),
+    roomname: string(),
 });
+
+export type roomDataShape = z.infer<typeof roomDataShape>;
 
 export const UserSSEEvents = object({
     close: event([]),
