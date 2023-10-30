@@ -6,7 +6,7 @@
   "scripts": {
     "backend": "cd ./backend ; npm run go",
     "frontend": "cd ./frontend ; npx vite --host 0.0.0.0",
-    "start": "conc --kill-others --raw \"npm:backend\" \"npm:frontend\"",
+    "start": "conc --kill-others \"npm:backend\" \"npm:frontend\"",
     "install-frontend": "cd ./frontend ; npm i",
     "install-backend": "cd ./backend ; npm i",
     "install-shared": "cd ./shared ; npm i",
