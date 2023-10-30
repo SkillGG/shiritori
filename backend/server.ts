@@ -4,8 +4,7 @@ import express, { Request, Response } from "express";
 
 import cookieParser from "cookie-parser";
 import { ServerRoute, serverRoutes } from "../shared/routeShapes";
-
-const website = "http://localhost:5173";
+import { configDotenv } from "dotenv";
 
 const app = express();
 
@@ -15,7 +14,12 @@ app.use(cookieParser());
 
 const addCORSHeaders = (res: Response) => {
     res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Access-Control-Allow-Origin", `${website}`);
+    res.setHeader(
+        "Access-Control-Allow-Origin",
+        `http${process.env.HTTPS ? "s" : ""}://${
+            process.env.EXTERNAL_HOST || process.env.SERVER_HOST
+        }:${process.env.WEB_PORT}`
+    );
     res.setHeader("Access-Control-Allow-Credentials", "true");
 };
 
