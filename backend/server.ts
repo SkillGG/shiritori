@@ -18,7 +18,7 @@ const addCORSHeaders = (res: Response) => {
         "Access-Control-Allow-Origin",
         `http${process.env.HTTPS ? "s" : ""}://${
             process.env.EXTERNAL_HOST || process.env.SERVER_HOST
-        }:${process.env.WEB_PORT}`
+        }${process.env.WEB_PORT?`:${process.env.WEB_PORT}`:""}`
     );
     res.setHeader("Access-Control-Allow-Credentials", "true");
 };
