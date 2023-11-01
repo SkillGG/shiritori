@@ -19,6 +19,7 @@ export interface Dictionary {
     };
     roomlist: {
         loading(): JSX.Element;
+        addRoom: string;
     };
     waitingForServer: string;
     langCode: string;
@@ -32,6 +33,7 @@ export const EnglishLanguage: Dictionary = {
         loginPlaceholder: "Login",
     },
     roomlist: {
+        addRoom: "Add room",
         loading() {
             return (
                 <>
@@ -61,6 +63,8 @@ export const PolishLanguage: Dictionary = {
         },
     },
     roomlist: {
+        ...EnglishLanguage.roomlist,
+        addRoom: "Nowy pokój",
         loading() {
             return (
                 <>

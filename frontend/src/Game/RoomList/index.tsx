@@ -3,6 +3,8 @@ import { GameCtx, GameContext } from "..";
 import { Server } from "../../server";
 import { Language } from "../../strings";
 
+import "./index.css";
+
 interface RoomListProps {
     changeData: React.Dispatch<React.SetStateAction<GameContext>>;
     enterRoom(roomid: number): void;
@@ -49,7 +51,12 @@ export const RoomList: FC<RoomListProps> = ({ changeData }) => {
 
     return gameData.listData ? (
         <>
-            <table></table>
+            <div className="roomlist">
+                {gameData.listData.rooms.map((room) => (
+                    <div className="room">{room.roomname}</div>
+                )) || <></>}
+                <div className="addRoom">{lang.roomlist.addRoom}</div>
+            </div>
         </>
     ) : (
         <>{lang.roomlist.loading()}</>
