@@ -5,6 +5,8 @@ import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import { ServerRoute, serverRoutes } from "../shared/routeShapes";
 import { configDotenv } from "dotenv";
+import { getFips } from "crypto";
+import { readFileSync } from "fs";
 
 const app = express();
 
@@ -18,7 +20,7 @@ const addCORSHeaders = (res: Response) => {
         "Access-Control-Allow-Origin",
         `http${process.env.HTTPS ? "s" : ""}://${
             process.env.EXTERNAL_HOST || process.env.SERVER_HOST
-        }${process.env.WEB_PORT?`:${process.env.WEB_PORT}`:""}`
+        }${process.env.WEB_PORT ? `:${process.env.WEB_PORT}` : ""}`
     );
     res.setHeader("Access-Control-Allow-Credentials", "true");
 };
@@ -62,6 +64,15 @@ export const addSSERoute = <Connection extends UserSSEConnection<any>>(
     });
 };
 
+type Log<T extends "request" | "error"> = {
+    eventType: T;
+    route: keyof serverRoutes;
+    time: { in: number; out: number };
+    response: { status: number; value: T extends "request" ? any : never };
+};
+
+const logs: Log<"request" | "error">[] = [];
+
 export const addRoute = <RouteID extends keyof serverRoutes>(
     route: RouteID,
     options: {
@@ -80,10 +91,19 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
 ) => {
     console.log("Adding route", route);
     app[options.method]("/" + route, (req, res: Response) => {
+        let logToAdd: Log<"request"> = {
+            eventType: "request",
+            response: { status: 0, value: "" },
+            route,
+            time: { in: Date.now(), out: 0 },
+        };
         console.log(`${options.method} @ ${route}`);
         addCORSHeaders(res);
         getCookies(req);
         const ret = (status: number, val: ServerRoute<RouteID, "res">) => {
+            logToAdd.time.out = Date.now();
+            logToAdd.response = { status, value: val };
+            logs.push(logToAdd);
             res.status(status);
             res.send(JSON.stringify(val));
         };
@@ -111,10 +131,37 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
                             : safeBody.error
                         : safeParams.error
                 );
+                logs.push({
+                    eventType: "error",
+                    response: { status: 500 },
+                    route,
+                    time: { in: logToAdd.time.in, out: Date.now() },
+                } as Log<"error">);
+                res.status(500).send("Could not process the request!");
             }
         } catch (e) {
             console.error("Could not parse body as a JSON!", req.body, e);
         }
+    });
+};
+
+export const addLogRoute = () => {
+    addRoute("logs", { method: "get" }, ({ res }) => {
+        res.status(200).send(`
+        <html>
+        <script>
+            const json = ${JSON.stringify(logs)};
+        </script>
+        <style>*{box-sizing: border-box;}</style>
+        <script src='logs/js.js' defer></script>
+        <body>
+            <div id="events"></div>
+        </body>
+        </html>
+        `);
+    });
+    addRoute("logs/js.js", { method: "get" }, ({ res }) => {
+        res.send(readFileSync("./logJS.js").toString("utf-8"));
     });
 };
 

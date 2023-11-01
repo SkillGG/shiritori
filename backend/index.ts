@@ -1,4 +1,4 @@
-import { addRoute, addSSERoute, startServer } from "./server";
+import { addLogRoute, addRoute, addSSERoute, startServer } from "./server";
 import { GameRoom, UserConnection as RoomConnection } from "./GameRoom";
 import { SSEResponse } from "./utils";
 import { Request } from "express";
@@ -148,6 +148,8 @@ addRoute("user/logout", { method: "post" }, ({ res, respond }) => {
     });
     respond(200, { msg: "OK" });
 });
+
+addLogRoute();
 
 const { SERVER_HOST, SERVER_PORT } = process.env;
 

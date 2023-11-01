@@ -30,6 +30,14 @@ export const serverRoutes = {
         ...emptyRoute,
         req: loginShape,
     },
+    logs: {
+        ...emptyRoute,
+        res: string(),
+    },
+    "logs/js.js": {
+        ...emptyRoute,
+        res: string(),
+    },
     "user/logout": {
         ...emptyRoute,
         req: logoutShape,
