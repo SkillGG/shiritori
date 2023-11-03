@@ -36,7 +36,7 @@ export const RoomList: FC<RoomListProps> = ({ changeData }) => {
                     };
                 });
             } else {
-                if ("error" in res) {
+                if (typeof res === "object" && "error" in res) {
                     console.error("Error while getting room list!", res.error);
                 }
             }

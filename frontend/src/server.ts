@@ -100,9 +100,9 @@ export class Server {
 
     static isDataPacket<
         X extends keyof serverRoutes,
-        T extends serverRoutes[X]["data"]
+        T extends serverRoutes[X]["parsedRes"]
     >(
-        p: (okErrorRes | responseOK | responseError) | Zod.infer<T>,
+        p: (okErrorRes | responseOK | responseError | string) | Zod.infer<T>,
         routeId: X
     ): p is Zod.infer<T> {
         if (typeof p === "object" && serverRoutes[routeId].req.shape) {

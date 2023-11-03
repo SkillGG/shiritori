@@ -85,7 +85,7 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
             status: number,
             response: ServerRoute<RouteID, "res">
         ) => void;
-        params: ServerRoute<RouteID, "vars">;
+        params: ServerRoute<RouteID, "params">;
         body: ServerRoute<RouteID, "req">;
     }) => void
 ) => {
@@ -104,14 +104,13 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
             logToAdd.time.out = Date.now();
             logToAdd.response = { status, value: val };
             logs.push(logToAdd);
-            res.status(status);
-            res.send(JSON.stringify(val));
+            res.send(JSON.stringify(val)).status(status);
         };
         try {
             const bodyRaw =
                 typeof req.body === "string" ? JSON.parse(req.body) : req.body;
             const safeBody = serverRoutes[route].req.safeParse(bodyRaw);
-            const safeParams = serverRoutes[route].vars.safeParse(req.params);
+            const safeParams = serverRoutes[route].params.safeParse(req.params);
             if (safeBody.success && safeParams.success) {
                 func({
                     req,
@@ -137,7 +136,7 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
                     route,
                     time: { in: logToAdd.time.in, out: Date.now() },
                 } as Log<"error">);
-                res.status(500).send("Could not process the request!");
+                res.send("Could not process the request!").status(500);
             }
         } catch (e) {
             console.error("Could not parse body as a JSON!", req.body, e);
@@ -146,13 +145,14 @@ export const addRoute = <RouteID extends keyof serverRoutes>(
 };
 
 export const addLogRoute = () => {
-    addRoute("logs", { method: "get" }, ({ res }) => {
+    addRoute("log", { method: "get" }, ({ res }) => {
         res.status(200).send(`
+        <!DOCTYPE html>
         <html>
         <script>
             const json = ${JSON.stringify(logs)};
         </script>
-        <style>*{box-sizing: border-box;}</style>
+        <link rel="stylesheet" href="logs/css.css">
         <script src='logs/js.js' defer></script>
         <body>
             <div id="events"></div>
@@ -160,8 +160,25 @@ export const addLogRoute = () => {
         </html>
         `);
     });
-    addRoute("logs/js.js", { method: "get" }, ({ res }) => {
-        res.send(readFileSync("./logJS.js").toString("utf-8"));
+    addRoute("logs/:file", { method: "get" }, ({ respond, res, params }) => {
+        if (params.file.includes("js.js") || params.file.includes("css.css")) {
+            console.log(
+                "returning file with type",
+                params.file,
+                "Content-Type",
+                params.file.includes(".js") ? "text/js" : "text/css"
+            );
+            res.setHeader(
+                "Content-Type",
+                params.file.includes(".js") ? "text/javascript" : "text/css"
+            );
+            const fileText: string = readFileSync(
+                "./logs/" + params.file
+            ).toString("utf-8");
+            res.send(fileText).status(200);
+            return;
+        }
+        respond(400, "Could not load the file!");
     });
 };
 

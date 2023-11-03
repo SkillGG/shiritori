@@ -19,10 +19,10 @@ export const okErrorRes = responseOK.or(responseError);
 export type okErrorRes = z.infer<typeof okErrorRes>;
 
 const emptyRoute = {
-    vars: object({}),
+    params: object({}),
     req: object({}),
     res: okErrorRes,
-    data: z.null(),
+    parsedRes: z.null(),
 };
 
 export const serverRoutes = {
@@ -30,13 +30,14 @@ export const serverRoutes = {
         ...emptyRoute,
         req: loginShape,
     },
-    logs: {
+    log: {
         ...emptyRoute,
         res: string(),
     },
-    "logs/js.js": {
+    "logs/:file": {
         ...emptyRoute,
         res: string(),
+        params: object({ file: string() }),
     },
     "user/logout": {
         ...emptyRoute,
@@ -45,15 +46,15 @@ export const serverRoutes = {
     "room/list": {
         ...emptyRoute,
         res: responseError.or(roomListShape),
-        data: roomListShape,
+        parsedRes: roomListShape,
     },
     "room/:roomid/:playerid/unready": {
         ...emptyRoute,
-        vars: object({ roomid: string(), playerid: string() }),
+        params: object({ roomid: string(), playerid: string() }),
     },
     "room/:roomid/:playerid/ready": {
         ...emptyRoute,
-        vars: object({ roomid: string(), playerid: string() }),
+        params: object({ roomid: string(), playerid: string() }),
     },
     check: {
         ...emptyRoute,
@@ -64,7 +65,7 @@ export type serverRoutes = typeof serverRoutes;
 
 export type ServerRoute<
     T extends keyof serverRoutes,
-    Z extends "res" | "req" | "vars" | "data"
+    Z extends "res" | "req" | "params" | "parsedRes"
 > = z.infer<serverRoutes[T][Z]>;
 
 export type UserLoginRequest = z.infer<typeof loginShape>;
