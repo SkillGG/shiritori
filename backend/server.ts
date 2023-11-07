@@ -4,8 +4,6 @@ import express, { Request, Response } from "express";
 
 import cookieParser from "cookie-parser";
 import { ServerRoute, serverRoutes } from "../shared/routeShapes";
-import { configDotenv } from "dotenv";
-import { getFips } from "crypto";
 import { readFileSync } from "fs";
 
 const app = express();

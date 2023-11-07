@@ -2,7 +2,13 @@ import { ServerRoute } from "../shared/routeShapes";
 import { GameRoom, NewRoomData } from "./GameRoom";
 
 export class GameHub {
-    private rooms: GameRoom[] = [];
+    private rooms: GameRoom[] = [
+        new GameRoom(0, {
+            gamemode: { name: "regular" },
+            name: "Test01",
+            maxplayers: 4,
+        }),
+    ];
 
     constructor() {}
 

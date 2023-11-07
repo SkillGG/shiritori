@@ -62,7 +62,6 @@ export const roomInfoShape = object({
     roomid: number(),
     roomname: string(),
 });
-
 export type roomInfoShape = z.infer<typeof roomInfoShape>;
 
 export const roomDataShape = object({
@@ -71,7 +70,6 @@ export const roomDataShape = object({
     roomid: number(),
     roomname: string(),
 });
-
 export type roomDataShape = z.infer<typeof roomDataShape>;
 
 export const UserSSEEvents = object({

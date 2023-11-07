@@ -39,7 +39,7 @@ const getDate = (n) => {
  * @param {number} index
  * @param {Log[]} arr
  */
-const addLog = (log, index, arr) => {
+const addLog = (log, _n, _ar) => {
     const div = document.createElement("div");
     div.style.backgroundColor =
         log.eventType === "request"
